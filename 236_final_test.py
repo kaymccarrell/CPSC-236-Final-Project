@@ -5,10 +5,9 @@ import time
 import os
 import sys
 
-# --- Constants ---
 TIME_LIMIT_SECONDS = 600  # 10 minutes
 
-# --- Load questions from CSV ---
+# Get questions from cpsc236_testbank.csv
 def load_questions_from_csv(filename="cpsc236_testbank.csv"):
     """Load questions from a CSV file into a list of dictionaries."""
     questions = []
@@ -31,12 +30,11 @@ def load_questions_from_csv(filename="cpsc236_testbank.csv"):
         sys.exit()
     return questions
 
-# --- ID Validation ---
 def validate_id(student_id):
     """Validate that the ID starts with 'A' followed by 5 digits between 1 and 9."""
     return bool(re.match(r"^A[1-9]{5}$", student_id))
 
-# --- Get Student Info ---
+# Get student info
 def get_student_info():
     """Prompt student for name and ID, with validation and 3 retry attempts."""
     first_name = input("Enter your first name: ").strip()
@@ -53,7 +51,7 @@ def get_student_info():
     print("Too many failed attempts. Exiting.")
     sys.exit()
 
-# --- Question Count Selection ---
+# Question count select
 def choose_question_count():
     """Allow student to choose 10 or 20 questions."""
     while True:
@@ -63,12 +61,13 @@ def choose_question_count():
         else:
             print("Invalid input. Please enter 10 or 20.")
 
-# --- Select Random Questions ---
+# Generate random questions
 def get_random_questions(question_pool, num_questions):
     """Select a number of unique random questions from the pool."""
     return random.sample(question_pool, num_questions)
+#The above line makes sure no duplicate questions are prompted
 
-# --- Ask Questions and Record Answers ---
+# Ask questions and record student answers
 def ask_questions(questions, start_time, time_limit):
     """Display questions one by one, record answers, and track time."""
     answers = []
@@ -92,14 +91,14 @@ def ask_questions(questions, start_time, time_limit):
         answers.append({"question": q['question'], "correct": q['answer'], "student_answer": answer})
     return answers
 
-# --- Calculate Score ---
+# Calculate score
 def calculate_score(answers, question_count):
     """Calculate score based on correct answers and quiz type."""
     correct_count = sum(1 for a in answers if a['correct'] == a['student_answer'])
     score = correct_count if question_count == 10 else correct_count * 0.5
     return score
 
-# --- Save Results to File ---
+# Save results
 def save_results(student_id, first_name, last_name, score, elapsed_time, answers):
     """Write quiz results to a personalized text file."""
     filename = f"{student_id}_{first_name}_{last_name}.txt"
@@ -113,7 +112,7 @@ def save_results(student_id, first_name, last_name, score, elapsed_time, answers
             f.write(f"Correct Answer: {entry['correct']}, Your Answer: {entry['student_answer']}\n\n")
     print(f"\n✅ Results saved to {filename}")
 
-# --- Main Program Loop ---
+# Main loop
 def main():
     """Main program loop for handling quiz sessions."""
     question_pool = load_questions_from_csv()
@@ -149,6 +148,5 @@ def main():
             print("Invalid input. Exiting.")
             break
 
-# --- Run the Program ---
 if __name__ == "__main__":
     main()
