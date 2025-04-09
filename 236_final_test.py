@@ -7,23 +7,24 @@ import sys
 
 TIME_LIMIT_SECONDS = 600  # 10 minutes
 
-# Get questions from cpsc236_testbank.csv
 def load_questions_from_csv(filename="cpsc236_testbank.csv"):
-    """Load questions from a CSV file into a list of dictionaries."""
     questions = []
     try:
         with open(filename, mode='r', newline='', encoding='utf-8') as file:
             reader = csv.DictReader(file)
             for row in reader:
+                answer = row.get("Correct Answer", "").strip().upper()
+                if answer not in {'A', 'B', 'C'}:
+                    print(f" Skipping row due to invalid answer: {row}")
+                    continue
                 questions.append({
-                    "question": row["Question"],
+                    "question": row["Question text"],
                     "options": [
-                        f"A) {row['A']}",
-                        f"B) {row['B']}",
-                        f"C) {row['C']}",
-                        f"D) {row['D']}"
+                        f"A) {row['Option A']}",
+                        f"B) {row['Option B']}",
+                        f"C) {row['Option C']}"
                     ],
-                    "answer": row["Answer"].strip().upper()
+                    "answer": answer
                 })
     except FileNotFoundError:
         print(f"Error: The file {filename} was not found.")
@@ -65,7 +66,6 @@ def choose_question_count():
 def get_random_questions(question_pool, num_questions):
     """Select a number of unique random questions from the pool."""
     return random.sample(question_pool, num_questions)
-#The above line makes sure no duplicate questions are prompted
 
 # Ask questions and record student answers
 def ask_questions(questions, start_time, time_limit):
@@ -74,7 +74,7 @@ def ask_questions(questions, start_time, time_limit):
     for i, q in enumerate(questions, 1):
         elapsed = time.time() - start_time
         if elapsed > time_limit:
-            print("\n⏱️ Time is up! Submitting the quiz...\n")
+            print("\n Time is up! Submitting the quiz...\n")
             break
 
         print(f"\nQuestion {i}: {q['question']}")
@@ -82,11 +82,11 @@ def ask_questions(questions, start_time, time_limit):
             print(option)
 
         while True:
-            answer = input("Enter your answer (A, B, C, or D): ").strip().upper()
-            if answer in ['A', 'B', 'C', 'D']:
+            answer = input("Enter your answer (A, B, or C): ").strip().upper()
+            if answer in ['A', 'B', 'C']:
                 break
             else:
-                print("Invalid input. Please enter A, B, C, or D.")
+                print("Invalid input. Please enter A, B, or C")
 
         answers.append({"question": q['question'], "correct": q['answer'], "student_answer": answer})
     return answers
@@ -110,7 +110,7 @@ def save_results(student_id, first_name, last_name, score, elapsed_time, answers
         for i, entry in enumerate(answers, 1):
             f.write(f"Q{i}: {entry['question']}\n")
             f.write(f"Correct Answer: {entry['correct']}, Your Answer: {entry['student_answer']}\n\n")
-    print(f"\n✅ Results saved to {filename}")
+    print(f"\n Results saved to {filename}")
 
 # Main loop
 def main():
@@ -127,14 +127,14 @@ def main():
 
         questions = get_random_questions(question_pool, question_count)
 
-        print("\n📚 Starting the quiz! You have 10 minutes.\n")
+        print("\n Starting the quiz! You have 10 minutes.\n")
         start_time = time.time()
         answers = ask_questions(questions, start_time, TIME_LIMIT_SECONDS)
         elapsed = time.time() - start_time
 
-        score = calculate_score(answers, question_count)
-        print(f"\n🎯 Your score: {score:.2f} / 10")
-        print(f"⏱️ Time taken: {elapsed:.2f} seconds")
+        score = calculate_score(answers, len(answers))
+        print(f"\n Your score: {score:.2f} / 10")
+        print(f"Time taken: {elapsed:.2f} seconds")
 
         save_results(student_id, first_name, last_name, score, elapsed, answers)
 
@@ -143,7 +143,10 @@ def main():
             print("Goodbye!")
             break
         elif choice == 'S':
-            os.system('cls' if os.name == 'nt' else 'clear')
+            try:
+                os.system('cls' if os.name == 'nt' else 'clear')
+            except:
+                print("\n" * 100)
         else:
             print("Invalid input. Exiting.")
             break
